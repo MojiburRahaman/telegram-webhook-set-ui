@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Set Webhooks</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.0/css/bulma.min.css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <div id="app" class="section">
+      <form @submit.prevent="setWebhook" enctype="multipart/form-data">
+        <label class="label">Enter your Token</label>
+        <p class="control">
+          <input class="input" type="text" v-model="token" :class="{ 'is-danger': tokenError }" />
+          <p v-if="tokenError" class="help is-danger">Token is required.</p>
+        </p>
+        <label class="label">Webhook endpoint</label>
+        <p class="control">
+          <input class="input" type="text" v-model="host" :class="{ 'is-danger': hostError }" />
+          <p v-if="hostError" class="help is-danger">Webhook endpoint is required.</p>
+        </p>
+        <br>
+        <div class="control is-grouped">
+          <p class="control">
+            <button class="button is-primary" type="submit" name="submit">Set Webhook</button>
+          </p>
+          <br>
+          <p class="control">
+            <a :href="get_webhook_info" target="_blank" class="button is-info">Get Webhook Info</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const { createApp } = Vue
+
+    createApp({
+      data() {
+        return {
+          token: '',
+          host: '',
+          tokenError: false,
+          hostError: false
+        }
+      },
+      computed: {
+        get_webhook_info() {
+          return 'https://api.telegram.org/bot' + this.token + '/getwebhookinfo'
+        },
+        set_webhook() {
+          return 'https://api.telegram.org/bot' + this.token + '/setwebhook'
+        }
+      },
+      methods: {
+        setWebhook() {
+          this.tokenError = !this.token;
+          this.hostError = !this.host;
+
+          if (this.token && this.host) {
+            // AJAX request to set webhook URL
+            fetch(this.set_webhook, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ url: this.host })
+            })
+              .then(response => response.json())
+              .then(data => {
+                console.log('Webhook set successfully:', data);
+                // Show success message
+                alert('Webhook set successfully!');
+                // You can add further actions here if needed
+              })
+              .catch(error => {
+                console.error('Error setting webhook:', error);
+                // Handle errors appropriately
+              });
+          }
+        }
+      }
+    }).mount('#app')
+  </script>
+
+  <style>
+    .is-danger input {
+      border-color: #ff3860;
+    }
+
+    .is-danger .help {
+      color: #ff3860;
+    }
+  </style>
+</body>
+
+</html>
